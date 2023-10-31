@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  # Tạo container database MySQL
+  mysql:
+    image: mysql:5.7
+    container_name: mysql # Đặt tên cho container
+    environment:
+      MYSQL_ROOT_PASSWORD: root  # Mật khẩu gốc cho root user
+      MYSQL_DATABASE: awsfcjuser  # Tên cơ sở dữ liệu
+      MYSQL_USER: admin  # Tên người dùng MySQL
+      MYSQL_PASSWORD: 123Vodanhphai  # Mật khẩu cho người dùng MySQL
+    volumes:
+      - ./my-app/db:/docker-entrypoint-initdb.d # Khi db tạo xong sẽ tự động setup dữ liệu có sẵn mapping từ file
+    ports:
+      - "3306:3306" # Mapping port trong container ra local
+    restart: always # Luôn khởi động lại nếu lỗi
+    networks:
+      - my-network # Thiết lập network có thể giao tiếp giữa các container
+
+  web:
+    depends_on:
+      - mysql  # Đảm bảo rằng dịch vụ web khởi chạy sau dịch vụ MySQL
+    build: ./my-app # Image sẽ lấy từ việc build ở Dockerfile trong my-app
+    container_name: webapp
+    ports:
+      - "5000:5000"  # Mapping port có thể truy cập web ở local
+    restart: always
+    stdin_open: true 
+    tty: true
+    networks:
+      - my-network
+    command: "npm start" # Chạy server
+
+networks:
+  my-network:
